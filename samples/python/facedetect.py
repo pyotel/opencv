@@ -19,7 +19,12 @@ from common import clock, draw_str
 
 
 def detect(img, cascade):
-    rects = cascade.detectMultiScale(img, scaleFactor=1.3, minNeighbors=4, minSize=(30, 30),
+    if scaleFactor_fn == -1 :
+        _scaleFator = 1.3
+    else :
+        _scaleFator = float(scaleFactor_fn)
+    
+    rects = cascade.detectMultiScale(img, scaleFactor=_scaleFator, minNeighbors=4, minSize=(30, 30),
                                      flags=cv2.CASCADE_SCALE_IMAGE)
     if len(rects) == 0:
         return []
@@ -34,7 +39,7 @@ if __name__ == '__main__':
     import sys, getopt
     print(__doc__)
 
-    args, video_src = getopt.getopt(sys.argv[1:], '', ['cascade=', 'nested-cascade='])
+    args, video_src = getopt.getopt(sys.argv[1:], '', ['cascade=', 'nested-cascade=','scale-factor='])
     try:
         video_src = video_src[0]
     except:
@@ -42,11 +47,14 @@ if __name__ == '__main__':
     args = dict(args)
     cascade_fn = args.get('--cascade', "../../data/haarcascades/haarcascade_frontalface_alt.xml")
     nested_fn  = args.get('--nested-cascade', "../../data/haarcascades/haarcascade_eye.xml")
+    scaleFactor_fn  = args.get('--scale-factor', -1)
 
     cascade = cv2.CascadeClassifier(cascade_fn)
     nested = cv2.CascadeClassifier(nested_fn)
 
     cam = create_capture(video_src, fallback='synth:bg=../data/lena.jpg:noise=0.05')
+    cam.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+    cam.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
 
     while True:
         ret, img = cam.read()
@@ -67,6 +75,7 @@ if __name__ == '__main__':
 
         draw_str(vis, (20, 20), 'time: %.1f ms' % (dt*1000))
         cv2.imshow('facedetect', vis)
+        cv2.imshow('gray', gray)
 
         if cv2.waitKey(5) == 27:
             break
