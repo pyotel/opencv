@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 '''
 face detection using haar cascades
@@ -24,7 +24,7 @@ def detect(img, cascade):
     else :
         _scaleFator = float(scaleFactor_fn)
     
-    rects = cascade.detectMultiScale(img, scaleFactor=_scaleFator, minNeighbors=4, minSize=(30, 30),
+    rects = cascade.detectMultiScale(img, scaleFactor=_scaleFator, minNeighbors=4, minSize=(15, 15),
                                      flags=cv2.CASCADE_SCALE_IMAGE)
     if len(rects) == 0:
         return []
