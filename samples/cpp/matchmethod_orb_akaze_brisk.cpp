@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
 		    sum_clock = (double)(clock() - start)/CLOCKS_PER_SEC;
 		    cout << "Brisk matching time : " << sum_clock << endl;
 		    cout << "descImg1 type : " << typeid(descImg1).name() << endl;
-		    cout << "descImg1 size : " << sizeof(descImg1) < endl;
+		    cout << "descImg1 size : " << sizeof(descImg1) << endl;
 		    cout << "descImg2 size : " << sizeof(descImg2) << endl;
 		    // Keep best matches only to have a nice drawing.
                     // We sort distance between descriptor matches
