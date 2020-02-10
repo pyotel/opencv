@@ -84,6 +84,7 @@ int main(int argc, char *argv[])
         }
         try
         {
+		b = BRISK::create();
             // We can detect keypoint with detect method
             b->detect(img1, keyImg1, Mat());
             // and compute their descriptors with method  compute
@@ -106,8 +107,8 @@ int main(int argc, char *argv[])
                     cout << "**************************************************************************\n";
                 }
                 try
-               	{
-			clock_t start = clock();
+               	{	cout << "*itMatcher : " << *itMatcher << endl;
+		    clock_t start = clock();
                     descriptorMatcher->match(descImg1, descImg2, matches, Mat());
 		    sum_clock = (double)(clock() - start)/CLOCKS_PER_SEC;
 		    cout << "Brisk matching time : " << sum_clock << endl;
