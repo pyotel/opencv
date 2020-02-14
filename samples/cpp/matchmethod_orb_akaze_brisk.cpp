@@ -15,7 +15,6 @@ static void help()
 }
 
 
-
 int main(int argc, char *argv[])
 {
     vector<String> typeDesc;
@@ -86,11 +85,14 @@ int main(int argc, char *argv[])
         {
 		b = BRISK::create();
             // We can detect keypoint with detect method
-            b->detect(img1, keyImg1, Mat());
+	clock_t start = clock();
+    		b->detect(img1, keyImg1, Mat());
             // and compute their descriptors with method  compute
             b->compute(img1, keyImg1, descImg1);
             // or detect and compute descriptors in one step
             b->detectAndCompute(img2, Mat(),keyImg2, descImg2,false);
+	    sum_clock = (double)(clock() - start)/CLOCKS_PER_SEC;
+	    cout << "extract time : " << sum_clock << endl;
             // Match method loop
             for (itMatcher = typeAlgoMatch.begin(); itMatcher != typeAlgoMatch.end(); ++itMatcher){
                 descriptorMatcher = DescriptorMatcher::create(*itMatcher);
@@ -111,12 +113,13 @@ int main(int argc, char *argv[])
 		    clock_t start = clock();
                     descriptorMatcher->match(descImg1, descImg2, matches, Mat());
 		    sum_clock = (double)(clock() - start)/CLOCKS_PER_SEC;
-		    cout << "Brisk matching time : " << sum_clock << endl;
-		    cout << "descImg1 type : " << typeid(descImg1).name() << endl;
-		    cout << "descImg1 size : " << sizeof(descImg1) << endl;
-		    cout << "descImg2 size : " << sizeof(descImg2) << endl;
+		    //cout << "Brisk matching time : " << sum_clock << endl;
+		    //cout << "descImg1 type : " << typeid(descImg1).name() << endl;
+		    //cout << "descImg1 : " << descImg1 << endl;
+		    //cout << "descImg2 : " << descImg2 << endl;
 		    // Keep best matches only to have a nice drawing.
                     // We sort distance between descriptor matches
+		    cout << "matching time : " << sum_clock << endl;
                     Mat index;
                     int nbMatch=int(matches.size());
                     Mat tab(nbMatch, 1, CV_32F);
