@@ -3,9 +3,10 @@
 #include <iostream>
 #include <time.h>
 #include <typeinfo>
+#include <fstream>
 using namespace std;
 using namespace cv;
-static double sum_clock;
+static double sum_clock1, sum_clock2;
 static void help()
 {
     cout << "\n This program demonstrates how to detect compute and match ORB BRISK and AKAZE descriptors \n"
@@ -91,8 +92,19 @@ int main(int argc, char *argv[])
             b->compute(img1, keyImg1, descImg1);
             // or detect and compute descriptors in one step
             b->detectAndCompute(img2, Mat(),keyImg2, descImg2,false);
-	    sum_clock = (double)(clock() - start)/CLOCKS_PER_SEC;
-	    cout << "extract time : " << sum_clock << endl;
+	    sum_clock1 = (double)(clock() - start)/CLOCKS_PER_SEC;
+	    cout << "extract time : " << sum_clock1 << endl;
+	    std::fstream outputFile;
+	    outputFile.open("outputFile.txt", std::ios::out);
+	    for(size_t ii=0; ii<keyImg1.size(); ++ii)
+		    outputFile<<keyImg1[ii].pt.x << " " <<keyImg1[ii].pt.y << endl;
+	    outputFile.close();
+	    std::fstream outputFile2;
+	    outputFile2.open("outputFile2.txt", std::ios::out);
+	    for(size_t ii=0; ii<keyImg2.size(); ++ii)
+		    outputFile2 << keyImg2[ii].pt.x << " " << keyImg2[ii].pt.y << endl;
+	    outputFile2.close();
+
             // Match method loop
             for (itMatcher = typeAlgoMatch.begin(); itMatcher != typeAlgoMatch.end(); ++itMatcher){
                 descriptorMatcher = DescriptorMatcher::create(*itMatcher);
@@ -112,16 +124,14 @@ int main(int argc, char *argv[])
                	{	cout << "*itMatcher : " << *itMatcher << endl;
 		    clock_t start = clock();
                     descriptorMatcher->match(descImg1, descImg2, matches, Mat());
-		    sum_clock = (double)(clock() - start)/CLOCKS_PER_SEC;
-		    //cout << "Brisk matching time : " << sum_clock << endl;
-		    //cout << "descImg1 type : " << typeid(descImg1).name() << endl;
-		    //cout << "descImg1 : " << descImg1 << endl;
-		    //cout << "descImg2 : " << descImg2 << endl;
+		    sum_clock2 = (double)(clock() - start)/CLOCKS_PER_SEC;
+		    cout << "Brisk feature extraction time : " << sum_clock1 << endl;
+		    cout << "Brisk matching time : " << sum_clock2 << endl;		   
 		    // Keep best matches only to have a nice drawing.
                     // We sort distance between descriptor matches
-		    cout << "matching time : " << sum_clock << endl;
-                    Mat index;
+		    Mat index;
                     int nbMatch=int(matches.size());
+		    //cout << "nbMatch (matches.size()) : " << nbMatch << endl;
                     Mat tab(nbMatch, 1, CV_32F);
                     for (int i = 0; i<nbMatch; i++)
                     {
@@ -134,6 +144,7 @@ int main(int argc, char *argv[])
                         bestMatches.push_back(matches[index.at<int>(i, 0)]);
                     }
                     Mat result;
+		    //cout << "bestMatches : " << bestMatches << endl;
                     drawMatches(img1, keyImg1, img2, keyImg2, bestMatches, result);
                     namedWindow(*itDesc+": "+*itMatcher, WINDOW_AUTOSIZE);
                     imshow(*itDesc + ": " + *itMatcher, result);
