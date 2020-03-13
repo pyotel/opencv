@@ -16,6 +16,39 @@ static void help()
 }
 
 
+void write(FileStorage& fs, const String& objname, const std::vector<DMatch>& matches) {
+	fs << objname << "[";
+	for (size_t i=0; i<matches.size(); i++) {
+		const DMatch &dm = matches[i];
+		cv::write(fs, dm.queryIdx);
+		cv::write(fs, dm.trainIdx);
+		cv::write(fs, dm.imgIdx);
+		cv::write(fs, dm.distance);
+	}
+	fs << "]";
+}
+void read(FileStorage& fs, const String& objname, std::vector<DMatch>& matches) {
+	FileNode pnodes = fs[objname];
+	for (FileNodeIterator it=pnodes.begin();; ) {
+		DMatch dm;
+		*it >> dm.queryIdx; it++;
+		*it >> dm.trainIdx; it++;
+		*it >> dm.imgIdx;   it++;
+		*it >> dm.distance; it++;
+		matches.push_back(dm);
+		if (it==pnodes.end()) break;
+	}
+}
+ostream& operator << (ostream &out, const std::vector<DMatch>& matches) {
+	out << "[" ;
+	for (size_t i=0; i<matches.size(); i++) {
+		const DMatch &dm = matches[i];
+		out << dm.queryIdx << "," << dm.trainIdx << "," << dm.imgIdx << "," << dm.distance << ";" << endl;
+	}
+	out << "]" << endl;
+	return out;
+}
+
 int main(int argc, char *argv[])
 {
     vector<String> typeDesc;
@@ -94,16 +127,6 @@ int main(int argc, char *argv[])
             b->detectAndCompute(img2, Mat(),keyImg2, descImg2,false);
 	    sum_clock1 = (double)(clock() - start)/CLOCKS_PER_SEC;
 	    cout << "extract time : " << sum_clock1 << endl;
-	    std::fstream outputFile;
-	    outputFile.open("outputFile.txt", std::ios::out);
-	    for(size_t ii=0; ii<keyImg1.size(); ++ii)
-		    outputFile<<keyImg1[ii].pt.x << " " <<keyImg1[ii].pt.y << endl;
-	    outputFile.close();
-	    std::fstream outputFile2;
-	    outputFile2.open("outputFile2.txt", std::ios::out);
-	    for(size_t ii=0; ii<keyImg2.size(); ++ii)
-		    outputFile2 << keyImg2[ii].pt.x << " " << keyImg2[ii].pt.y << endl;
-	    outputFile2.close();
 
             // Match method loop
             for (itMatcher = typeAlgoMatch.begin(); itMatcher != typeAlgoMatch.end(); ++itMatcher){
@@ -125,7 +148,6 @@ int main(int argc, char *argv[])
 		    clock_t start = clock();
                     descriptorMatcher->match(descImg1, descImg2, matches, Mat());
 		    sum_clock2 = (double)(clock() - start)/CLOCKS_PER_SEC;
-		    cout << "Brisk feature extraction time : " << sum_clock1 << endl;
 		    cout << "Brisk matching time : " << sum_clock2 << endl;		   
 		    // Keep best matches only to have a nice drawing.
                     // We sort distance between descriptor matches
@@ -144,13 +166,17 @@ int main(int argc, char *argv[])
                         bestMatches.push_back(matches[index.at<int>(i, 0)]);
                     }
                     Mat result;
-		    //cout << "bestMatches : " << bestMatches << endl;
-                    drawMatches(img1, keyImg1, img2, keyImg2, bestMatches, result);
+		    drawMatches(img1, keyImg1, img2, keyImg2, bestMatches, result);
+		    FileStorage fs2("some.xml", FileStorage::READ);
+		    read(fs2, "BestMatches", bestMatches);
+		    cout << bestMatches << endl;
+		    fs2.release();		   
                     namedWindow(*itDesc+": "+*itMatcher, WINDOW_AUTOSIZE);
                     imshow(*itDesc + ": " + *itMatcher, result);
                     // Saved result could be wrong due to bug 4308
                     FileStorage fs(*itDesc + "_" + *itMatcher + ".yml", FileStorage::WRITE);
                     fs<<"Matches"<<matches;
+		    cout << "Matches : " << matches << endl;
                     vector<DMatch>::iterator it;
                     cout<<"**********Match results**********\n";
                     cout << "Index \tIndex \tdistance\n";
