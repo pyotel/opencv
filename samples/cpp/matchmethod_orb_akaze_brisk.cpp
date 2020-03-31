@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     typeAlgoMatch.push_back("BruteForce-Hamming");
     typeAlgoMatch.push_back("BruteForce-Hamming(2)");
     cv::CommandLineParser parser(argc, argv,
-        "{ @image1 | ../data/fidu.jpg | }"
+        "{ @image1 | ../data/img_fidu_pa_board.jpg | }"
         "{ @image2 | ../data/img_board.jpg | }"
         "{help h ||}");
     if (parser.has("help"))
@@ -124,10 +124,15 @@ int main(int argc, char *argv[])
             // and compute their descriptors with method  compute
             b->compute(img1, keyImg1, descImg1);
             // or detect and compute descriptors in one step
-            b->detectAndCompute(img2, Mat(),keyImg2, descImg2,false);
+            b->detectAndCompute(img2, Mat(), keyImg2, descImg2,false);
 	    sum_clock1 = (double)(clock() - start)/CLOCKS_PER_SEC;
 	    cout << "extract time : " << sum_clock1 << endl;
-
+	    std::fstream outputFile;
+	    outputFile.open("outputFile.txt", std::ios::out);
+	    for(size_t ii=0; ii<keyImg1.size(); ++ii)
+		    outputFile << keyImg1[ii].pt.x << " " << keyImg1[ii].pt.y << endl;
+	    outputFile.close();
+	    
             // Match method loop
             for (itMatcher = typeAlgoMatch.begin(); itMatcher != typeAlgoMatch.end(); ++itMatcher){
                 descriptorMatcher = DescriptorMatcher::create(*itMatcher);
@@ -173,6 +178,7 @@ int main(int argc, char *argv[])
 		    fs2.release();		   
                     namedWindow(*itDesc+": "+*itMatcher, WINDOW_AUTOSIZE);
                     imshow(*itDesc + ": " + *itMatcher, result);
+		    imwrite(*itDesc + ": " + *itMatcher, result);
                     // Saved result could be wrong due to bug 4308
                     FileStorage fs(*itDesc + "_" + *itMatcher + ".yml", FileStorage::WRITE);
                     fs<<"Matches"<<matches;
